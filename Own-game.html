@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Своя игра — Русский язык | Супер-игра 1000</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #020617 0%, #0a0f2a 100%);
+            font-family: 'Segoe UI', 'Roboto', 'Montserrat', 'Arial', sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .game-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(2, 10, 28, 0.75);
+            backdrop-filter: blur(4px);
+            border-radius: 48px;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.5);
+            padding: 25px 30px;
+            border: 1px solid #2c4070;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #FFB347;
+        }
+        .title h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, #FFE0A3, #FFB347);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 1px;
+        }
+        .title p {
+            color: #b2c7f0;
+            font-size: 0.85rem;
+        }
+
+        .game-table-wrapper {
+            overflow-x: auto;
+            border-radius: 32px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px;
+        }
+        .game-grid {
+            display: flex;
+            flex-direction: column;
+            min-width: 700px;
+        }
+        .categories-row {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .category-cell {
+            background: linear-gradient(145deg, #1a2a56, #0f1a3a);
+            border-radius: 28px;
+            padding: 16px 6px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1rem;
+            color: #FFE6B3;
+            border: 1px solid #FFB347;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+            word-break: break-word;
+        }
+        .question-row {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .question-cell {
+            background: #0c163b;
+            border-radius: 28px;
+            text-align: center;
+            padding: 18px 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid #3a4a7a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .question-cell:hover:not(.used) {
+            background: #1f2c60;
+            transform: scale(1.02);
+            border-color: #FFB347;
+            box-shadow: 0 0 12px rgba(255,180,70,0.4);
+        }
+        .question-points {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #F2C94C;
+        }
+        .used {
+            opacity: 0.35;
+            background: #1a1f3a;
+            filter: grayscale(0.2);
+            cursor: default;
+            pointer-events: none;
+            border-color: #3a4870;
+        }
+        .used .question-points {
+            text-decoration: line-through;
+            color: #8a99bb;
+        }
+
+        .super-game-section {
+            margin-top: 35px;
+            padding-top: 20px;
+            border-top: 2px solid #FFB347;
+            text-align: center;
+        }
+        .super-game-btn {
+            background: linear-gradient(145deg, #FFB347, #e69500);
+            border: none;
+            padding: 14px 40px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1.3rem;
+            color: #1e2a3a;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(255,180,70,0.3);
+        }
+        .super-game-btn:hover {
+            transform: scale(1.02);
+            background: linear-gradient(145deg, #ffc65c, #ffaa2a);
+            box-shadow: 0 8px 20px rgba(255,180,70,0.5);
+        }
+        .super-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .super-question {
+            background: linear-gradient(145deg, #1f2d55, #131c3a);
+            border-radius: 32px;
+            padding: 20px 10px;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid #FFB347;
+            transition: 0.2s;
+        }
+        .super-question:hover:not(.super-used) {
+            background: #2a3a76;
+            transform: scale(1.02);
+        }
+        .super-points {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #FFD966;
+        }
+        .super-used {
+            opacity: 0.35;
+            background: #1a1f3a;
+            cursor: default;
+            pointer-events: none;
+            border-color: #3a4870;
+        }
+        .super-used .super-points {
+            text-decoration: line-through;
+            color: #8a99bb;
+        }
+        .super-label {
+            color: #FFE6B3;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(1, 4, 28, 0.96);
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0.25s, opacity 0.25s;
+        }
+        .modal-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-card {
+            background: linear-gradient(145deg, #0e1b3e, #020a1f);
+            width: 90%;
+            max-width: 850px;
+            border-radius: 64px;
+            padding: 40px 35px;
+            border: 2px solid #FFB347;
+            box-shadow: 0 35px 55px black;
+            text-align: center;
+            animation: fadePop 0.3s ease-out;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        @keyframes fadePop {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .modal-category {
+            background: #FFB347;
+            display: inline-block;
+            padding: 8px 28px;
+            border-radius: 40px;
+            font-weight: bold;
+            color: #1f2a3a;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+        .modal-points {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #FFD966;
+            margin: 10px 0;
+        }
+        .modal-question-text {
+            background: #071433;
+            padding: 28px 22px;
+            border-radius: 48px;
+            font-size: 1.3rem;
+            line-height: 1.45;
+            color: #fff6eb;
+            margin: 20px 0;
+            text-align: left;
+            border-left: 8px solid #FFB347;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        .modal-btn {
+            background: #2c3e66;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .modal-btn.primary {
+            background: #FFB347;
+            color: #1e2a3a;
+        }
+        .modal-btn.primary:hover {
+            background: #ff9f2d;
+            transform: scale(0.97);
+        }
+        .modal-btn.secondary:hover {
+            background: #5a6e9e;
+            transform: scale(0.97);
+        }
+        .answer-reveal {
+            background: #001c3d;
+            border-radius: 40px;
+            padding: 18px;
+            margin-top: 15px;
+            color: #d9edff;
+            border: 1px solid #FFB34780;
+            font-size: 1.05rem;
+            text-align: left;
+        }
+        .hidden-answer {
+            display: none;
+        }
+        footer {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #6679a6;
+        }
+        @media (max-width: 850px) {
+            .game-container {
+                padding: 15px;
+            }
+            .category-cell {
+                font-size: 0.75rem;
+                padding: 12px 3px;
+            }
+            .question-points {
+                font-size: 1.3rem;
+            }
+            .modal-question-text {
+                font-size: 1rem;
+            }
+            .super-grid {
+                gap: 10px;
+            }
+            .super-points {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <div class="game-header">
+        <div class="title">
+            <h1>🎲 СВОЯ ИГРА</h1>
+            <p>Русский язык • Все категории на одном поле</p>
+        </div>
+    </div>
+
+    <div class="game-table-wrapper">
+        <div id="gameGrid" class="game-grid"></div>
+    </div>
+
+    <!-- Супер-игра -->
+    <div class="super-game-section">
+        <button id="superGameToggleBtn" class="super-game-btn">⭐ ПЕРЕХОД К СУПЕР-ИГРЕ (1000) ⭐</button>
+        <div id="superGameBlock" style="display: none;">
+            <div class="super-label">🔥 СУПЕР-ВОПРОСЫ (каждый по 1000 баллов)</div>
+            <div class="super-grid" id="superGrid"></div>
+        </div>
+    </div>
+
+    <footer>📌 Правила: нажмите на любую ячейку с вопросом → откроется модальное окно. Кнопка «Показать ответ» показывает правильный ответ и блокирует вопрос.</footer>
+</div>
+
+<!-- Модальное окно -->
+<div id="questionModal" class="modal-overlay">
+    <div class="modal-card">
+        <span class="modal-category" id="modalCat">Категория</span>
+        <div class="modal-points" id="modalVal">💰</div>
+        <div class="modal-question-text" id="modalQuestionText">Текст вопроса</div>
+        <div class="modal-buttons">
+            <button id="showAnswerBtn" class="modal-btn primary">📖 ПОКАЗАТЬ ОТВЕТ</button>
+            <button id="closeModalBtn" class="modal-btn secondary">✖️ ЗАКРЫТЬ</button>
+        </div>
+        <div id="answerBlock" class="answer-reveal hidden-answer">
+            <strong>✅ Правильный ответ:</strong><br><span id="correctAnswerSpan"></span>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --------------------------------------------------------------
+    // КАТЕГОРИИ И ВОПРОСЫ (основная игра)
+    // --------------------------------------------------------------
+    const CATEGORIES = [
+        "МЕЖДОМЕТИЯ",
+        "ЗВУКОПОДРАЖАНИЯ",
+        "ЧАСТИЦЫ",
+        "СОЮЗЫ",
+        "ПРОИЗВ. ПРЕДЛОГИ",
+        "НЕ С ЧАСТЯМИ РЕЧИ",
+        "НАРЕЧИЯ"
+    ];
+
+    const VALUES = [100, 200, 300, 400, 500];
+
+    const QUESTIONS_DATA = [
+        [ // Междометия
+            { value: 100, text: "Какое междометие чаще всего используют, чтобы выразить внезапную радость, восторг или триумф (например, при забитом голе)?", answer: "Ура!", alt: "Ура" },
+            { value: 200, text: "Из какого языка в русский пришли такие этикетные междометия, как «алло» и «браво»?", answer: "Из французского («алло») и итальянского («браво»)", alt: "Французский и итальянский" },
+            { value: 300, text: "Какую синтаксическую роль выполняют междометия в предложении и какими членами предложения они обычно являются?", answer: "Они не связаны синтаксически с другими словами и не являются членами предложения (если не переходят в другие части речи)", alt: "Не являются членами предложения" },
+            { value: 400, text: "Какое междометие, выражающее призыв к тишине, пишется через дефис, если повторяется, и часто используется в сказках перед началом повествования?", answer: "Тсс или Ша (в сказках: Чу-чу или Цыц)", alt: "Тсс|Ша|Чу-чу|Цыц" },
+            { value: 500, text: "Разделите слова в предложении «Ай да кошка, у на диво хороша!» на междометие и частицу. Какое слово за что отвечает?", answer: "Ай да здесь выступает в роли единой модальной частицы (выражение восхищения), междометия тут нет, либо Ай — междометие, да — частица.", alt: "Ай — междометие, да — частица; либо целиком частица" }
+        ],
+        [ // Звукоподражания
+            { value: 100, text: "Каким звукоподражательным словом в русском языке традиционно передают тиканье часов?", answer: "Тик-так", alt: "Тик так" },
+            { value: 200, text: "В чём главное отличие звукоподражательных слов от междометий?", answer: "Междометия передают чувства и эмоции человека, а звукоподражания лишь имитируют звуки живой и неживой природы", alt: "Междометия — эмоции, звукоподражания — звуки" },
+            { value: 300, text: "Какое звукоподражание, имитирующее резкий звук падения или удара, часто превращается в глагол в разговорной речи (например: «Он ... головой об лёд»)?", answer: "Бум (бумкнул) или Шмяк (шмякнулся)", alt: "Бум|Шмяк" },
+            { value: 400, text: "Каким знаком препинания обычно разделяются сложные звукоподражательные слова, передающие протяжные или повторяющиеся звуки (например: бум-бум, кря-кря)?", answer: "Дефисом", alt: "Дефис" },
+            { value: 500, text: "Каким членом предложения является звукоподражательное слово в фразе: «А из кустов вдруг раздалось грозное \"Р-р-р!\"»?", answer: "Подлежащим (раздалось что? — «Р-р-р!»)", alt: "Подлежащее" }
+        ],
+        [ // Частицы
+            { value: 100, text: "Назовите две самые известные отрицательные частицы в русском языке, которые постоянно путают при письме.", answer: "Не и Ни", alt: "НЕ и НИ" },
+            { value: 200, text: "К какому разряду по значению относятся частицы ли, разве, неужели?", answer: "Вопросительные частицы", alt: "Вопросительные" },
+            { value: 300, text: "С помощью каких двух частиц образуется форма условного (сослагательного) наклонения глагола?", answer: "Бы и Б", alt: "Бы, Б" },
+            { value: 400, text: "Как пишется частица «таки» в словах «пришёл-таки», «всё-таки», но «он таки успел»? Сформулируйте правило.", answer: "Через дефис после глаголов, наречий и других частиц, в остальных случаях — раздельно", alt: "После глаголов и наречий через дефис, иначе раздельно" },
+            { value: 500, text: "Какая смысловая частица спрятана в предложении «Давай пойдём в кино» и какова её функция?", answer: "Давай — формообразующая частица, служит для образования повелительного наклонения", alt: "Давай — частица повелительного наклонения" }
+        ],
+        [ // Союзы
+            { value: 100, text: "На какие две большие группы делятся все союзы по характеру синтаксической связи между членами предложения или частями сложного предложения?", answer: "Сочинительные и подчинительные", alt: "Сочинительные и подчинительные" },
+            { value: 200, text: "К какому разряду сочинительных союзов относятся союзы или, либо, то... то?", answer: "Разделительные", alt: "Разделительные союзы" },
+            { value: 300, text: "Изменится ли написание слов «тоже» и «также», если их можно заменить союзом «и»?", answer: "Нет, они будут писаться слитно", alt: "Слитно" },
+            { value: 400, text: "Назовите три составных подчинительных союза, перед которыми запятая может ставиться как в начале, так и разбивать союз наполовину.", answer: "Потому что, так как, для того чтобы (и др.)", alt: "Потому что, так как, для того чтобы" },
+            { value: 500, text: "Какую логическую связь выражают союзы «не только..., но и», «как..., так и»? Как они называются?", answer: "Сопоставительную связь (градационные / двойные союзы)", alt: "Градационные, двойные, сопоставительные" }
+        ],
+        [ // Производные предлоги
+            { value: 100, text: "От какой части речи образован производный предлог «благодаря»?", answer: "От деепричастия", alt: "Деепричастие" },
+            { value: 200, text: "Как пишется производный предлог «(в)течение» (дня) и какая буква пишется на конце?", answer: "Раздельно, на конце «е» (в течение)", alt: "в течение" },
+            { value: 300, text: "Раскройте скобки и выберите верное написание: «Действовать (в)продолжение часа» и «Сюжетные линии (в)продолжении романа». Где здесь предлог?", answer: "Предлог — «в продолжение» (раздельно, на конце «е»); существительное с предлогом — «в продолжении»", alt: "в продолжение — предлог, в продолжении — сущ." },
+            { value: 400, text: "Назовите производный предлог, который пишется слитно, имеет значение причины и образован от существительного с предлогом «ввиду» (например, ... непогоды). Какое исключение нужно помнить?", answer: "Предлог «ввиду» (пишется слитно). Исключение: устойчивое сочетание «иметь в виду» (пишется в три слова)", alt: "ввиду, исключение иметь в виду" },
+            { value: 500, text: "С каким падежом употребляются производные предлоги согласно, вопреки, благодаря?", answer: "С дательным падежом (кому? чему?)", alt: "Дательный падеж" }
+        ],
+        [ // НЕ с разными частями речи
+            { value: 100, text: "Как пишется НЕ с глаголами и деепричастиями в большинстве случаев?", answer: "Раздельно (кроме слов, которые без НЕ не употребляются)", alt: "Раздельно" },
+            { value: 200, text: "В каком случае НЕ с существительными, прилагательными и наречиями на -о/-е пишется раздельно?", answer: "При наличии противопоставления с союзом «а» или усилительных слов", alt: "Противопоставление с а" },
+            { value: 300, text: "Как напишете: «(Не)годующий взгляд» и «Домашнее задание (не)выполнено»? Объясните разницу.", answer: "Негодующий — слитно (без НЕ не употр.), не выполнено — раздельно (краткое причастие)", alt: "Негодующий слитно, не выполнено раздельно" },
+            { value: 400, text: "Как влияет присутствие слов «далеко не», «вовсе не», «отнюдь не» на написание НЕ с прилагательными?", answer: "Они требуют раздельного написания", alt: "Требуют раздельного написания" },
+            { value: 500, text: "Раскройте скобки: «Книга (не)распродана», «Ещё (не)распроданная книга», «(Не)распроданная книга лежала на полке».", answer: "Не распродана (раздельно, краткое причастие), ещё не распроданная (раздельно, есть зависимое слово), нераспроданная книга (слитно, одиночное полное причастие)", alt: "не распродана, ещё не распроданная, нераспроданная" }
+        ],
+        [ // Наречия
+            { value: 100, text: "На какие основные два вопроса отвечают наречия образа действия?", answer: "Как? Каким образом?", alt: "Как? Каким способом?" },
+            { value: 200, text: "Какая буква пишется на конце наречий после шипящих под ударением (например: свеж.., горяч..) и какое слово является исключением?", answer: "Буква «О» (свежо, горячо). Исключение: ещё", alt: "О, исключение ещё" },
+            { value: 300, text: "Как пишутся наречия, образованные повторением одного и того же слова или однокоренных слов (например: едва-едва, как-никак)?", answer: "Через дефис", alt: "Дефисное написание" },
+            { value: 400, text: "Сформулируйте правило букв О и А на конце наречий с приставками из-, до-, с- и в-, на-, за-.", answer: "В наречиях с приставками из-, до-, с- пишется «А» (если нет исходного прилагательного с этой приставкой), с в-, на-, за- пишется «О»", alt: "Из-до-с → А, в-на-за → О" },
+            { value: 500, text: "Как пишутся наречия «(в)догонку», «(на)миг», «(по)одиночке» и «(в)открытую»? Слитно или раздельно?", answer: "Вдогонку (слитно), на миг (раздельно), поодиночке (слитно), в открытую (раздельно)", alt: "Вдогонку, на миг, поодиночке, в открытую" }
+        ]
+    ];
+
+    // --------------------------------------------------------------
+    // СУПЕР-ИГРА: 5 сложных вопросов по 1000 баллов (исправленные, с полными ответами)
+    // --------------------------------------------------------------
+    const SUPER_QUESTIONS = [
+        { 
+            value: 1000, 
+            text: `【Вопрос 1 (междометия + частицы + союзы + наречия)】
+Прочитайте предложение: «Ох, неужели ты всё-таки решился, чтобы потом не пожалеть?»
+1. Выпишите междометие и определите его оттенок.
+2. Найдите частицу, которая пишется через дефис, и объясните правило.
+3. Какой союз связывает части предложения? К какому разряду он относится?
+4. Найдите наречие, укажите его разряд по значению.`, 
+            answer: `1. «Ох» — междометие, выражающее сожаление, усталость или досаду (в данном контексте — сожаление с оттенком укоризны).
+2. «Всё-таки» — частица пишется через дефис, потому что присоединяется к наречию «всё». Правило: частица «-таки» присоединяется через дефис к глаголам, наречиям и другим частицам.
+3. «Чтобы» — подчинительный союз цели (соединяет главную и придаточную части цели).
+4. «Потом» — наречие времени.`,
+            alt: ""
+        },
+        { 
+            value: 1000, 
+            text: `【Вопрос 2 (звукоподражания + союзы + предлоги + наречия)】
+Разберите фразу: «Сначала раздалось сухое "Щёлк!", а потом — глухое "Бу-у-ум", будто где-то вдалеке упало что-то тяжёлое».
+1. Какое из звукоподражаний передаёт единичный удар, а какое — протяжный раскатистый звук?
+2. Какой союз указывает на последовательность событий?
+3. Найдите производный предлог (или докажите, что его нет).
+4. Выпишите наречия, укажите их разряды.`, 
+            answer: `1. «Щёлк!» — единичный короткий удар. «Бу-у-ум» — протяжный раскатистый звук (повтор гласной и дефис имитируют длительность).
+2. Союз «а» (противительный) в паре с наречием «потом» указывает на последовательность и противопоставление характера звуков.
+3. В этом предложении нет производных предлогов. Слова «будто» — союз или частица, «вдалеке» — наречие.
+4. Наречия: «сначала» (времени), «потом» (времени), «вдалеке» (места).`,
+            alt: ""
+        },
+        { 
+            value: 1000, 
+            text: `【Вопрос 3 (частицы + НЕ + наречия + союзы)】
+Вставьте пропущенные буквы и раскройте скобки. Объясните каждое написание:
+«(Н..) взлюбил он эту (н..) ряшливую, вовсе (н..) обаятельную особу, (н..) как (н..) старался, а она (н..) уходила (н..) на шаг».
+Определите, какие частицы здесь написаны, какой союз работает, и найдите наречие с приставкой.`, 
+            answer: `Правильный текст: «Не взлюбил он эту неряшливую, вовсе не обаятельную особу, ни как ни старался, а она не уходила ни на шаг».
+Объяснения:
+- «Не взлюбил» — слитно, глагол без НЕ не употребляется.
+- «Неряшливую» — слитно, прилагательное без НЕ не употребляется.
+- «вовсе не обаятельную» — раздельно, есть усилительное слово «вовсе».
+- «Ни как ни старался» — частица НИ усиливает отрицание в придаточном уступительном значении.
+- «не уходила» — раздельно (глагол).
+- «ни на шаг» — частица НИ усиливает отрицание.
+Частицы: «не» (отрицательная), «ни» (усилительная), «вовсе» (усилительная).
+Союз: «а» — сочинительный противительный.
+Наречие с приставкой: «никак» (наречие с приставкой ни-, пишется слитно).`,
+            alt: ""
+        },
+        { 
+            value: 1000, 
+            text: `【Вопрос 4 (предлоги + частицы + междометия + НЕ)】
+В предложении: «Эх, несмотря на уговоры, он таки поступил по-своему, и ничего не вышло» —
+1. Найдите междометие и объясните его эмоциональную окраску.
+2. Выделите производный предлог, докажите, что он не является деепричастием.
+3. Определите частицу, которая должна писаться через дефис. Почему в данном случае она написана раздельно?
+4. Почему «не вышло» пишется раздельно?`, 
+            answer: `1. «Эх» — междометие, выражающее сожаление, досаду или укоризну (здесь — сожаление о случившемся).
+2. «Несмотря на» — производный предлог (уступительное значение, пишется раздельно в два слова). От деепричастия «не смотря» отличается: предлог нельзя заменить глагольной формой без потери смысла, у него нет значения добавочного действия.
+3. Частица «таки» должна писаться через дефис после глагола: «поступил-таки». Здесь она написана раздельно, потому что стоит после местоимения «он», а не сразу после глагола. Правило: через дефис частица «-таки» пишется только после глаголов, наречий и других частиц.
+4. «Не вышло» — глагол в прошедшем времени, пишется с НЕ раздельно, так как без НЕ употребляется («вышло» есть).`,
+            alt: ""
+        },
+        { 
+            value: 1000, 
+            text: `【Вопрос 5 (все темы)】
+Разберите предложение: «Эй, — раздалось вдруг сзади, — если ты таки не прекратишь назло всем шуршать бумажками и цокать, то не видать тебе, вопреки ожиданиям, ни отдыха, ни покоя».
+Найдите:
+1. Междометие.
+2. Звукоподражания (два слова в инфинитиве).
+3. Частицы (две разные).
+4. Союзы (два, назовите разряды).
+5. Производный предлог.
+6. НЕ с разными частями речи — объясните.
+7. Наречия (три, укажите разряды).`, 
+            answer: `1. Междометие: «Эй» (призыв к вниманию, побудительное).
+2. Звукоподражания: «шуршать», «цокать» — инфинитивы, образованные от звукоподражаний.
+3. Частицы: «таки» (усилительно-выделительная), «ни» (отрицательно-усилительная, повторяющаяся).
+4. Союзы: «если» (подчинительный условный), «и» (сочинительный соединительный в «бумажками и цокать»).
+5. Производный предлог: «вопреки» (управляет дательным падежом: «вопреки ожиданиям»).
+6. НЕ: «не прекратишь» — раздельно (глагол); «не видать» — раздельно (глагол в безличной форме).
+7. Наречия: «вдруг» (времени), «сзади» (места), «назло» (цели).`,
+            alt: ""
+        }
+    ];
+
+    // Состояние
+    let used = [];
+    let superUsed = [false, false, false, false, false];
+
+    function initUsed() {
+        used = [];
+        for (let i = 0; i < CATEGORIES.length; i++) {
+            used.push(new Array(QUESTIONS_DATA[i].length).fill(false));
+        }
+    }
+    initUsed();
+
+    function renderFullGrid() {
+        const container = document.getElementById('gameGrid');
+        container.innerHTML = '';
+
+        const headerRow = document.createElement('div');
+        headerRow.className = 'categories-row';
+        for (let i = 0; i < CATEGORIES.length; i++) {
+            const catDiv = document.createElement('div');
+            catDiv.className = 'category-cell';
+            catDiv.innerText = CATEGORIES[i];
+            headerRow.appendChild(catDiv);
+        }
+        container.appendChild(headerRow);
+
+        for (let rowIdx = 0; rowIdx < VALUES.length; rowIdx++) {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'question-row';
+            for (let catIdx = 0; catIdx < CATEGORIES.length; catIdx++) {
+                const question = QUESTIONS_DATA[catIdx][rowIdx];
+                const isUsed = used[catIdx][rowIdx];
+                const qCell = document.createElement('div');
+                qCell.className = `question-cell ${isUsed ? 'used' : ''}`;
+                qCell.innerHTML = `<div class="question-points">${question.value}</div>`;
+                if (!isUsed) {
+                    qCell.addEventListener('click', (function(c, r) {
+                        return function() { openModal(c, r, false); };
+                    })(catIdx, rowIdx));
+                }
+                rowDiv.appendChild(qCell);
+            }
+            container.appendChild(rowDiv);
+        }
+    }
+
+    function renderSuperGame() {
+        const container = document.getElementById('superGrid');
+        if (!container) return;
+        container.innerHTML = '';
+        for (let i = 0; i < SUPER_QUESTIONS.length; i++) {
+            const q = SUPER_QUESTIONS[i];
+            const isUsed = superUsed[i];
+            const div = document.createElement('div');
+            div.className = `super-question ${isUsed ? 'super-used' : ''}`;
+            div.innerHTML = `<div class="super-points">${q.value}</div>`;
+            if (!isUsed) {
+                div.addEventListener('click', (function(idx) {
+                    return function() { openModal(null, idx, true); };
+                })(i));
+            }
+            container.appendChild(div);
+        }
+    }
+
+    let activeModalData = null;
+
+    function openModal(catIdx, qIdx, isSuper) {
+        let question, categoryName, pointsText;
+        if (isSuper) {
+            if (superUsed[qIdx]) return;
+            question = SUPER_QUESTIONS[qIdx];
+            categoryName = "⭐ СУПЕР-ИГРА ⭐";
+            pointsText = `🔥 ${question.value} баллов 🔥`;
+            activeModalData = { isSuper: true, idx: qIdx, question: question };
+        } else {
+            if (used[catIdx][qIdx]) return;
+            question = QUESTIONS_DATA[catIdx][qIdx];
+            categoryName = CATEGORIES[catIdx];
+            pointsText = `💰 ${question.value}`;
+            activeModalData = { isSuper: false, catIdx: catIdx, qIdx: qIdx, question: question };
+        }
+
+        const modal = document.getElementById('questionModal');
+        document.getElementById('modalCat').innerText = categoryName;
+        document.getElementById('modalVal').innerHTML = pointsText;
+        document.getElementById('modalQuestionText').innerHTML = question.text;
+        document.getElementById('correctAnswerSpan').innerHTML = question.answer;
+        document.getElementById('answerBlock').classList.add('hidden-answer');
+        modal.classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('questionModal').classList.remove('active');
+        activeModalData = null;
+    }
+
+    function revealAnswerAndLock() {
+        if (!activeModalData) return;
+        const { isSuper, question } = activeModalData;
+        
+        if (isSuper) {
+            const idx = activeModalData.idx;
+            if (superUsed[idx]) {
+                document.getElementById('correctAnswerSpan').innerHTML = question.answer;
+                document.getElementById('answerBlock').classList.remove('hidden-answer');
+                return;
+            }
+            superUsed[idx] = true;
+            renderSuperGame();
+            document.getElementById('correctAnswerSpan').innerHTML = question.answer;
+            document.getElementById('answerBlock').classList.remove('hidden-answer');
+        } else {
+            const { catIdx, qIdx } = activeModalData;
+            if (used[catIdx][qIdx]) {
+                document.getElementById('correctAnswerSpan').innerHTML = question.answer;
+                document.getElementById('answerBlock').classList.remove('hidden-answer');
+                return;
+            }
+            used[catIdx][qIdx] = true;
+            renderFullGrid();
+            document.getElementById('correctAnswerSpan').innerHTML = question.answer;
+            document.getElementById('answerBlock').classList.remove('hidden-answer');
+        }
+    }
+
+    function toggleSuperGame() {
+        const block = document.getElementById('superGameBlock');
+        if (block.style.display === 'none') {
+            block.style.display = 'block';
+            renderSuperGame();
+        } else {
+            block.style.display = 'none';
+        }
+    }
+
+    function bindModalEvents() {
+        const showBtn = document.getElementById('showAnswerBtn');
+        const closeBtn = document.getElementById('closeModalBtn');
+        const modalOverlay = document.getElementById('questionModal');
+        const superBtn = document.getElementById('superGameToggleBtn');
+
+        showBtn.addEventListener('click', () => {
+            if (activeModalData) revealAnswerAndLock();
+            else closeModal();
+        });
+        closeBtn.addEventListener('click', () => closeModal());
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) closeModal();
+        });
+        superBtn.addEventListener('click', toggleSuperGame);
+    }
+
+    function initGame() {
+        renderFullGrid();
+        bindModalEvents();
+        document.getElementById('superGameBlock').style.display = 'none';
+    }
+
+    initGame();
+</script>
+</body>
+</html>
